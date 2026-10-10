@@ -1,0 +1,17 @@
+{
+  "name": "kbhardwaj",
+  "owner": {
+    "name": "Kaustubh Bhardwaj",
+    "url": "https://twocents.page"
+  },
+  "plugins": [
+    {
+      "name": "curriculum-designer",
+      "source": "./",
+      "description": "Turn a topic or a reading list into a complete self-paced course."
+    }
+  ],
+  "metadata": {
+    "description": "Agent skills from twocents.page."
+  }
+}

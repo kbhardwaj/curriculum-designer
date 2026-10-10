@@ -1,0 +1,9 @@
+{
+  "name": "curriculum-designer",
+  "description": "Turn a topic or a reading list into a complete self-paced course: book breakdowns, a synthesis layer, and an interactive course app with quizzes, review cards and a working brief.",
+  "version": "1.0.0",
+  "author": { "name": "Kaustubh Bhardwaj", "url": "https://twocents.page" },
+  "homepage": "https://twocents.page/skills/curriculum-designer/",
+  "repository": "https://github.com/kbhardwaj/curriculum-designer",
+  "license": "MIT"
+}

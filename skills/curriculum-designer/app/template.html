@@ -1,0 +1,691 @@
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a drawing-set index down the left (the course's "sheets"), one working sheet on the right. */
+:root {
+  --paper: #eef1ee;
+  --sheet: #fbfcfa;
+  --ink: #18262b;
+  --ink-2: #4a5a5f;
+  --rule: #cfd8d4;
+  --accent: #2446b8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3e8fa;
+  --e: #1f7a5a; --e-soft: #dcefe6;
+  --h: #9a6200; --h-soft: #f6ead2;
+  --v: #6b3fa8; --v-soft: #ece3f7;
+  --bad: #b3261e; --bad-soft: #f8e1df;
+  --display: "Young Serif", Georgia, "Times New Roman", serif;
+  --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111a1d; --sheet: #172226; --ink: #e4ebe8; --ink-2: #9fb0ad; --rule: #2c3b3f;
+    --accent: #8ea6ff; --accent-ink: #0d1530; --accent-soft: #1f2a4d;
+    --e: #6fd0a8; --e-soft: #16362b; --h: #f0b95a; --h-soft: #3a2c12; --v: #c4a2f2; --v-soft: #2d2140;
+    --bad: #ff8a80; --bad-soft: #3d1c1a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111a1d; --sheet: #172226; --ink: #e4ebe8; --ink-2: #9fb0ad; --rule: #2c3b3f;
+  --accent: #8ea6ff; --accent-ink: #0d1530; --accent-soft: #1f2a4d;
+  --e: #6fd0a8; --e-soft: #16362b; --h: #f0b95a; --h-soft: #3a2c12; --v: #c4a2f2; --v-soft: #2d2140;
+  --bad: #ff8a80; --bad-soft: #3d1c1a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--body); font-size: 16px; line-height: 1.6; }
+h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); }
+h2 { font-size: 1.55rem; }
+h3 { font-size: 1.2rem; }
+p { margin: 0; }
+button, input, textarea, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.label { font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); }
+.muted { color: var(--ink-2); }
+
+.shell { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; }
+.rail { border-right: 1px solid var(--rule); padding: 20px 14px; position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+.brand { display: flex; flex-direction: column; gap: 2px; padding: 0 8px; }
+.brand b { font-family: var(--display); font-weight: 400; font-size: 1.35rem; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav a { display: grid; grid-template-columns: 38px minmax(0,1fr) auto; gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--r); color: var(--ink); text-decoration: none; font-size: .93rem; line-height: 1.35; }
+.nav a:hover { background: var(--accent-soft); }
+.nav a.on { background: var(--ink); color: var(--paper); }
+.nav a.on .label, .nav a.on .tick { color: var(--paper); }
+.nav .num { font-family: var(--mono); font-size: .75rem; color: var(--ink-2); }
+.nav a.on .num { color: var(--paper); }
+.tick { font-family: var(--mono); font-size: .75rem; color: var(--e); }
+.navgroup { display: flex; flex-direction: column; gap: 2px; }
+.navgroup > .label { padding: 0 8px 4px; }
+.sync { padding: 0 8px; font-size: .8rem; }
+
+main { padding-block: 28px 80px; padding-inline: clamp(16px, 4vw, 56px); min-width: 0; }
+.sheet { max-width: 780px; display: flex; flex-direction: column; gap: 28px; }
+.sheet.wide { max-width: 1080px; }
+.head { display: flex; flex-direction: column; gap: 10px; }
+.titleblock { display: flex; flex-wrap: wrap; gap: 8px 18px; font-family: var(--mono); font-size: .75rem; color: var(--ink-2); letter-spacing: .04em; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); padding: 6px 0; }
+.lede { font-size: 1.1rem; color: var(--ink-2); max-width: 64ch; }
+
+.step { display: flex; flex-direction: column; gap: 12px; }
+.step > .label { display: flex; gap: 10px; align-items: center; }
+.step > .label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+.prose { display: flex; flex-direction: column; gap: 12px; max-width: 68ch; }
+.prose ul, .prose ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }
+.prose h4 { font-family: var(--body); font-size: 1rem; margin: 6px 0 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft); padding: 1px 4px; border-radius: 3px; }
+
+.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel.attempt { border-style: dashed; border-color: var(--accent); }
+.idea { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r); }
+.idea > summary { cursor: pointer; list-style: none; padding: 14px 20px; display: flex; gap: 12px; align-items: baseline; justify-content: space-between; }
+.idea > summary::-webkit-details-marker { display: none; }
+.idea > summary h3 { font-size: 1.12rem; }
+.idea[open] > summary { border-bottom: 1px solid var(--rule); }
+.idea .prose { padding: 16px 20px 20px; }
+
+.tag { font-family: var(--mono); font-size: .7rem; font-weight: 500; letter-spacing: .05em; padding: 2px 7px; border-radius: 99px; white-space: nowrap; }
+.tag.E { background: var(--e-soft); color: var(--e); }
+.tag.H { background: var(--h-soft); color: var(--h); }
+.tag.V { background: var(--v-soft); color: var(--v); }
+
+.btn { border: 1px solid var(--ink); background: transparent; border-radius: var(--r); padding: 8px 14px; cursor: pointer; font-weight: 700; font-size: .92rem; }
+.btn:hover { background: var(--accent-soft); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.small { padding: 4px 10px; font-size: .82rem; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+textarea, input[type=text] { width: 100%; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 10px 12px; line-height: 1.5; }
+textarea { min-height: 130px; resize: vertical; }
+.saved { font-family: var(--mono); font-size: .72rem; color: var(--ink-2); }
+
+.hinge { display: flex; flex-direction: column; gap: 10px; }
+.hinge .q { font-weight: 700; }
+.opts { display: flex; flex-direction: column; gap: 6px; }
+.opt { text-align: left; display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 8px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--r); padding: 9px 12px; cursor: pointer; }
+.opt:hover { border-color: var(--accent); }
+.opt .k { font-family: var(--mono); color: var(--ink-2); }
+.opt.right { border-color: var(--e); background: var(--e-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.diag { font-size: .93rem; padding: 10px 12px; border-left: 3px solid var(--ink-2); background: var(--paper); }
+.diag.right { border-color: var(--e); }
+.diag.wrong { border-color: var(--bad); }
+
+.steps { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 10px; }
+.steps li::marker { font-family: var(--mono); color: var(--ink-2); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.tile { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r); padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); min-width: 0; }
+a.tile:hover { border-color: var(--accent); }
+.tile .big { font-family: var(--display); font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.bar { height: 6px; background: var(--rule); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); }
+
+.modlist { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.modrow { display: grid; grid-template-columns: 56px minmax(0,1fr) auto; gap: 14px; align-items: baseline; padding: 12px 4px; border-bottom: 1px solid var(--rule); text-decoration: none; color: var(--ink); }
+.modrow:hover { background: var(--sheet); }
+.modrow .num { font-family: var(--display); font-size: 1.4rem; color: var(--ink-2); }
+.modrow .t { font-weight: 700; }
+.modrow .meta { font-family: var(--mono); font-size: .72rem; color: var(--ink-2); text-align: right; }
+
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--r); padding: 28px; min-height: 240px; display: flex; flex-direction: column; gap: 16px; }
+.card .front { font-family: var(--display); font-size: 1.35rem; line-height: 1.35; }
+.card .back { border-top: 1px dashed var(--rule); padding-top: 16px; }
+.grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.grades .btn { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.grades .btn small { font-weight: 400; font-family: var(--mono); font-size: .7rem; color: var(--ink-2); }
+
+.bands { display: flex; flex-direction: column; gap: 14px; }
+.band { border: 1px solid var(--rule); border-radius: var(--r); background: var(--sheet); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.band header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.nodes { display: flex; flex-wrap: wrap; gap: 8px; }
+.node { border: 1px solid var(--rule); background: var(--paper); border-radius: 99px; padding: 5px 12px; cursor: pointer; font-size: .9rem; display: inline-flex; gap: 8px; align-items: center; }
+.node.on { border-color: var(--accent); background: var(--accent-soft); }
+.node.linked { border-color: var(--accent); }
+.loop { font-size: .95rem; padding: 12px 14px; border: 1.5px dashed var(--accent); border-radius: var(--r); }
+
+.tension { display: flex; flex-direction: column; gap: 10px; }
+.poles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.poles > div { background: var(--paper); border-radius: var(--r); padding: 10px 12px; font-size: .93rem; min-width: 0; }
+.rule { font-weight: 700; border-left: 3px solid var(--accent); padding-left: 12px; }
+
+.entry { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--rule); }
+.tagpick { display: flex; gap: 4px; }
+.tagpick button { border: 1px solid var(--rule); background: transparent; border-radius: 99px; font-family: var(--mono); font-size: .72rem; padding: 2px 8px; cursor: pointer; }
+.tagpick button.on.E { background: var(--e-soft); color: var(--e); border-color: var(--e); }
+.tagpick button.on.H { background: var(--h-soft); color: var(--h); border-color: var(--h); }
+.tagpick button.on.V { background: var(--v-soft); color: var(--v); border-color: var(--v); }
+.x { border: 0; background: transparent; color: var(--ink-2); cursor: pointer; font-size: 1.1rem; line-height: 1; }
+
+.fb { background: var(--accent-soft); border-radius: var(--r); padding: 14px 16px; }
+.dstmt { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.conf { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.conf button, .tf button { border: 1px solid var(--rule); background: transparent; border-radius: var(--r); padding: 3px 10px; cursor: pointer; font-family: var(--mono); font-size: .8rem; }
+.conf button.on, .tf button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.mtop { display: none; }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0,1fr); }
+  .rail { display: none; position: fixed; inset: 0; z-index: 20; background: var(--paper); height: 100%; padding-top: calc(20px + env(safe-area-inset-top, 0px)); }
+  .rail.open { display: flex; }
+  .mtop { display: flex; justify-content: space-between; align-items: center; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); border-bottom: 1px solid var(--rule); padding: 10px 16px; }
+  .mtop b { font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+  .poles { grid-template-columns: minmax(0,1fr); }
+  .grades { grid-template-columns: repeat(2, 1fr); }
+  .card { padding: 20px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: rise .25s ease-out; }
+  @keyframes rise { from { transform: translateY(4px); opacity: .6; } to { transform: none; opacity: 1; } }
+}
+</style>
+
+<div class="mtop"><b>{{TITLE}}</b><button class="btn small" id="menuBtn" aria-controls="rail" aria-expanded="false">Index</button></div>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Course index"></nav>
+  <main id="main"></main>
+</div>
+
+<script type="application/json" id="course-data">/*__DATA__*/</script>
+<script>
+(() => {
+"use strict";
+const DATA = JSON.parse(document.getElementById("course-data").textContent);
+const C = DATA.course || {};
+const MODULES = DATA.modules || [];
+const TAGS = Object.assign({ E: "supported by evidence", H: "hypothesis to test", V: "value commitment" }, C.tags || {});
+const CARDS = DATA.cards || [];
+const CASES = DATA.cases || [];
+const TENSIONS = DATA.tensions || [];
+const BRIEF = DATA.brief || [];
+const MODEL = DATA.model || { bands: [] };
+const DIAG = DATA.diagnostic || [];
+const DAY = 86400000;
+
+/* ---------- state + persistence ---------- */
+const blank = () => ({ v: 1, updatedAt: 0, started: Date.now(), modules: {}, cards: {}, cases: {}, brief: {}, diag: [] });
+let S = blank();
+const LS_KEY = (C.slug || "course") + "-state";
+try { const raw = localStorage.getItem(LS_KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
+
+let db = null, stateRef = null, syncNote = "Saved in this browser";
+let writing = false, pending = false, timer = null;
+function save() {
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {}
+  if (!stateRef) return;
+  clearTimeout(timer);
+  timer = setTimeout(flush, 1200);
+}
+async function flush() {
+  if (!stateRef) return;
+  if (writing) { pending = true; return; }
+  writing = true;
+  try { await stateRef.set(JSON.parse(JSON.stringify(S))); syncNote = "Synced to your account"; }
+  catch (e) { syncNote = e && e.code === "quota_exceeded" ? "Account storage is full; saved in this browser" : "Saved in this browser (sync paused)"; }
+  writing = false;
+  renderSync();
+  if (pending) { pending = false; flush(); }
+}
+async function connect() {
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!d || !u) return;
+    const id = await u.id();
+    if (!id) return;
+    db = d;
+    stateRef = db.doc("data/users/" + id + "/state");
+    const snap = await stateRef.get();
+    if (snap.exists) {
+      const remote = snap.data();
+      if ((remote.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(blank(), JSON.parse(JSON.stringify(remote))); try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) {} route(); }
+      else if ((S.updatedAt || 0) > (remote.updatedAt || 0)) flush();
+    } else if (S.updatedAt) flush();
+    syncNote = "Synced to your account";
+    renderSync();
+  } catch (e) { /* stay local */ }
+}
+
+/* ---------- Claude mentor ---------- */
+let samplePromise = null;
+function getSample() {
+  if (!samplePromise) samplePromise = (window.claude && window.claude.use) ? window.claude.use("sample").catch(() => null) : Promise.resolve(null);
+  return samplePromise;
+}
+const SAMPLE_MSG = {
+  not_granted: "Mentor feedback is turned off for this page.", sampling_disabled: "Claude isn't available on this account.",
+  rate_limited: "Too many requests just now. Try again in a minute.", session_expired: "Sign in to claude.ai again, then retry.",
+  prompt_too_large: "That was too long to send. Shorten your answer and retry.", refused: "Claude declined this one. Rephrase and retry."
+};
+async function mentorViaEndpoint(outEl, btn, prompt) {
+  // Self-hosted mode: POST the prompt to your own server, which calls the Claude API and streams
+  // plain text back (see scripts/mentor-proxy.mjs). Nothing else leaves the browser.
+  btn.disabled = true; outEl.hidden = false; outEl.textContent = "Thinking...";
+  try {
+    const r = await fetch(C.mentor_endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const reader = r.body.getReader(), dec = new TextDecoder(); let text = "";
+    for (;;) { const { value, done } = await reader.read(); if (done) break; text += dec.decode(value, { stream: true }); outEl.innerHTML = md(text); }
+    if (!text) outEl.textContent = "No reply.";
+  } catch (e) { outEl.innerHTML = "<p class='muted'>" + esc("Couldn't reach the mentor service (" + (e && e.message || e) + ").") + "</p>"; }
+  finally { btn.disabled = false; }
+}
+async function mentor(outEl, btn, prompt) {
+  if (C.mentor_endpoint && !(window.claude && window.claude.use)) return mentorViaEndpoint(outEl, btn, prompt);
+  const sample = await getSample();
+  if (!sample) { outEl.hidden = false; outEl.textContent = "Mentor feedback works when this page is opened on claude.ai, or when the course is hosted with a mentor endpoint."; return; }
+  btn.disabled = true; outEl.hidden = false; outEl.textContent = "Thinking...";
+  try {
+    await sample(prompt, { modelTier: "default", cache: false, onText: ({ text }) => { outEl.innerHTML = md(text); } });
+  } catch (e) {
+    if (e && e.code === "cancelled") return;
+    outEl.innerHTML = (e && e.text ? md(e.text) + "<p class='muted'>(interrupted)</p>" : "") + "<p class='muted'>" + esc(SAMPLE_MSG[e && e.code] || "Couldn't reach Claude. Try again.") + "</p>";
+  } finally { btn.disabled = false; }
+}
+const MENTOR_VOICE = C.mentor_voice || "You are a demanding but supportive mentor (high standards, high support). Be specific and concise (under 250 words). Use markdown bullets. Tag claims as [E] evidence, [H] hypothesis, [V] value where useful.";
+
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function inline(s) {
+  return s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+          .replace(/\[(E|H|V)\]/g, '<span class="tag $1">$1</span>');
+}
+function md(src) {
+  const lines = esc(src || "").split(/\n/);
+  let out = "", list = null, para = [];
+  const flushP = () => { if (para.length) { out += "<p>" + inline(para.join(" ")) + "</p>"; para = []; } };
+  const closeL = () => { if (list) { out += "</" + list + ">"; list = null; } };
+  for (const raw of lines) {
+    const l = raw.trim();
+    let m;
+    if (!l) { flushP(); closeL(); continue; }
+    if ((m = l.match(/^#{1,4}\s+(.*)/))) { flushP(); closeL(); out += "<h4>" + inline(m[1]) + "</h4>"; continue; }
+    if ((m = l.match(/^[-*]\s+(.*)/))) { flushP(); if (list !== "ul") { closeL(); out += "<ul>"; list = "ul"; } out += "<li>" + inline(m[1]) + "</li>"; continue; }
+    if ((m = l.match(/^\d+[.)]\s+(.*)/))) { flushP(); if (list !== "ol") { closeL(); out += "<ol>"; list = "ol"; } out += "<li>" + inline(m[1]) + "</li>"; continue; }
+    closeL(); para.push(l);
+  }
+  flushP(); closeL();
+  return out;
+}
+const tagChip = t => t ? `<span class="tag ${esc(t)}" title="${esc(TAGS[t] || "")}">${esc(t)}</span>` : "";
+const modState = id => (S.modules[id] = S.modules[id] || { hinge: {}, attempt: "", brief: "", done: false });
+const L = "ABCDEFGH";
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+const saveSoon = debounce(save, 600);
+function bookName(slug) {
+  const s = String(slug).replace(/^books\//, "").replace(/\.md.*$/, "").replace(/^\d+-/, "").replace(/-/g, " ");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/* ---------- SRS (SM-2 lite) ---------- */
+function cardState(id) { return S.cards[id]; }
+function dueCards() {
+  const now = Date.now();
+  const unlocked = new Set(MODULES.filter(m => modState(m.id).done || m.id === "m0").map(m => m.id));
+  const seen = CARDS.filter(c => S.cards[c.id] && S.cards[c.id].due <= now);
+  const fresh = CARDS.filter(c => !S.cards[c.id] && unlocked.has(c.module));
+  const newToday = Object.values(S.cards).filter(c => c.firstSeen && now - c.firstSeen < DAY).length;
+  return seen.sort((a, b) => S.cards[a.id].due - S.cards[b.id].due).concat(fresh.slice(0, Math.max(0, 20 - newToday)));
+}
+function grade(id, g) {
+  const now = Date.now();
+  const c = S.cards[id] || { ease: 2.5, interval: 0, reps: 0, firstSeen: now, lapses: 0 };
+  if (g === 0) { c.reps = 0; c.lapses++; c.interval = 0; c.ease = Math.max(1.3, c.ease - 0.2); c.due = now + 10 * 60000; }
+  else {
+    c.reps++;
+    if (c.reps === 1) c.interval = g === 3 ? 3 : 1;
+    else if (c.reps === 2) c.interval = g === 3 ? 7 : 3;
+    else c.interval = Math.round(c.interval * c.ease * (g === 1 ? 0.6 : g === 3 ? 1.3 : 1));
+    c.ease = Math.max(1.3, c.ease + (g === 1 ? -0.15 : g === 3 ? 0.15 : 0));
+    c.due = now + c.interval * DAY;
+  }
+  S.cards[id] = c; save();
+}
+
+/* ---------- nav ---------- */
+function renderNav(active) {
+  const mods = MODULES.map(m => {
+    const st = modState(m.id);
+    return `<a href="#${m.id}" class="${active === m.id ? "on" : ""}"><span class="num">${m.id === "m0" ? "START" : "M" + m.num}</span><span>${esc(m.title)}</span><span class="tick">${st.done ? "done" : ""}</span></a>`;
+  }).join("");
+  const due = dueCards().length;
+  const tools = [
+    ["home", "Overview", ""], ["cards", "Review deck", due ? due + " due" : ""], ["brief", C.artifact_name || "Design brief", ""],
+    ["model", "Unified model", ""], ["tensions", "Tensions", TENSIONS.length], ["cases", "Casebook", CASES.length], ["diagnostic", "Diagnostic", ""]
+  ].map(([id, t, x]) => `<a href="#${id}" class="${active === id ? "on" : ""}"><span class="num">&#9679;</span><span>${t}</span><span class="label">${x}</span></a>`).join("");
+  $("#rail").innerHTML = `<div class="brand"><span class="label">A course in ${(C.levels || []).length || "three"} levels</span><b>${esc(C.title || "Course")}</b></div>
+    <div class="navgroup"><span class="label">Workbench</span><div class="nav">${tools}</div></div>
+    <div class="navgroup"><span class="label">Modules</span><div class="nav">${mods}</div></div>
+    <p class="sync muted" id="sync">${esc(syncNote)}</p>`;
+}
+function renderSync() { const el = $("#sync"); if (el) el.textContent = syncNote; }
+
+/* ---------- views ---------- */
+function viewHome() {
+  const done = MODULES.filter(m => modState(m.id).done).length;
+  const next = MODULES.find(m => !modState(m.id).done);
+  const due = dueCards().length;
+  const learned = Object.values(S.cards).filter(c => c.reps >= 2).length;
+  const briefCount = Object.values(S.brief).reduce((n, a) => n + (a || []).length, 0);
+  const totalMin = MODULES.reduce((n, m) => n + (m.minutes || 0), 0);
+  const levels = C.levels || [...new Set(MODULES.map(m => m.level))];
+  return `<div class="sheet wide">
+    <header class="head">
+      <span class="label">${esc(C.title || "")} &middot; ${MODULES.length} modules &middot; ~${Math.round(totalMin / 60)} hours &middot; ${C.source_count || "?"} sources</span>
+      <h1>${esc(C.tagline || "")}</h1>
+      <p class="lede">${esc(C.lede || "")}</p>
+      <div class="row">${tagChip("E")}<span class="muted">${esc(TAGS.E)}</span>${tagChip("H")}<span class="muted">${esc(TAGS.H)}</span>${tagChip("V")}<span class="muted">${esc(TAGS.V)}</span></div>
+    </header>
+    <div class="grid">
+      <a class="tile" href="#${next ? next.id : "cards"}"><span class="label">Up next</span><span class="big">${next ? (next.id === "m0" ? "Start" : "M" + next.num) : "Capstone"}</span><span>${esc(next ? next.title : "All modules complete")}</span></a>
+      <a class="tile" href="#cards"><span class="label">Review deck</span><span class="big">${due}</span><span>cards due today &middot; ${learned} of ${CARDS.length} learned</span></a>
+      <div class="tile"><span class="label">Modules complete</span><span class="big">${done}/${MODULES.length}</span><div class="bar"><i style="width:${MODULES.length ? done / MODULES.length * 100 : 0}%"></i></div></div>
+      <a class="tile" href="#brief"><span class="label">${esc(C.artifact_name || "Design brief")}</span><span class="big">${briefCount}</span><span>${esc(C.artifact_items || "decisions")} recorded</span></a>
+    </div>
+    <section class="step"><span class="label">The sequence</span>
+      <div class="modlist">${MODULES.map(m => `<a class="modrow" href="#${m.id}"><span class="num">${m.id === "m0" ? "0" : m.num}</span><span><span class="t">${esc(m.title)}</span><br><span class="muted">${esc(m.level)} &middot; ${(m.sources || []).slice(0, 3).map(bookName).join(", ")}</span></span><span class="meta">${m.minutes || ""} min<br>${modState(m.id).done ? "done" : ""}</span></a>`).join("")}</div>
+    </section>
+    <section class="step"><span class="label">How to work each day (45-60 min)</span>
+      <div class="prose"><ol>
+        <li><strong>Review deck first</strong>, 5-10 minutes. Spacing is where retention comes from.</li>
+        <li><strong>Attempt before you read.</strong> Every module opens with a problem. Write a real answer, even a bad one. The struggle prepares you for the explanation.</li>
+        <li><strong>Read the ideas, then do the hinge questions honestly.</strong> A wrong answer tells you which misconception to fix.</li>
+        <li><strong>Change your brief.</strong> Every module ends with a decision to add or revise, tagged ${tagChip("E")} ${tagChip("H")} or ${tagChip("V")}.</li>
+      </ol></div>
+    </section>
+  </div>`;
+}
+
+function viewModule(m) {
+  const st = modState(m.id);
+  const hinge = (m.hinge || []).map((h, i) => {
+    const pick = st.hinge[i];
+    const opts = h.options.map((o, j) => {
+      let cls = "";
+      if (pick != null) { if (j === h.answer) cls = "right"; else if (j === pick) cls = "wrong"; }
+      return `<button class="opt ${cls}" data-h="${i}" data-o="${j}" ${pick != null ? "disabled" : ""}><span class="k">${L[j]}</span><span>${inline(esc(o))}</span></button>`;
+    }).join("");
+    const diag = pick != null ? `<div class="diag reveal ${pick === h.answer ? "right" : "wrong"}"><strong>${pick === h.answer ? "Right." : "Not quite."}</strong> ${inline(esc((h.diagnoses || [])[pick] || ""))}${pick !== h.answer ? `<br><br><strong>${L[h.answer]}:</strong> ${inline(esc((h.diagnoses || [])[h.answer] || ""))}` : ""}</div>` : "";
+    return `<div class="panel hinge"><span class="label">Hinge ${i + 1} of ${m.hinge.length}</span><p class="q">${inline(esc(h.q))}</p><div class="opts">${opts}</div>${diag}</div>`;
+  }).join("");
+  const answered = Object.keys(st.hinge).length, correct = (m.hinge || []).filter((h, i) => st.hinge[i] === h.answer).length;
+  return `<div class="sheet">
+    <header class="head">
+      <div class="titleblock"><span>SHEET ${m.id === "m0" ? "0" : "M" + m.num}</span><span>LEVEL: ${esc(m.level).toUpperCase()}</span><span>${m.minutes || "?"} MIN</span><span>SOURCES: ${(m.sources || []).map(s => esc(String(s).slice(0, 2))).join(" ")}</span></div>
+      <h1>${esc(m.title)}</h1>
+      ${m.hook ? `<p class="lede">${inline(esc(m.hook))}</p>` : ""}
+    </header>
+    ${m.attempt ? `<section class="step"><span class="label">1 &middot; Attempt first${m.attempt.minutes ? " &middot; " + m.attempt.minutes + " min" : ""}</span>
+      <div class="panel attempt"><div class="prose">${md(m.attempt.prompt)}</div>
+      <label class="label" for="att-${m.id}">Your attempt</label>
+      <textarea id="att-${m.id}" data-att placeholder="Write before you read on. Wrong is fine; blank is not.">${esc(st.attempt)}</textarea>
+      <div class="row"><button class="btn" id="fb-att">Get mentor feedback</button><span class="saved">Saves as you type</span></div>
+      <div class="fb prose" id="fb-att-out" hidden></div></div></section>` : ""}
+    ${(m.objectives || []).length ? `<section class="step"><span class="label">2 &middot; What you'll be able to do</span><div class="prose"><ul>${m.objectives.map(o => `<li>${inline(esc(o))}</li>`).join("")}</ul></div></section>` : ""}
+    <section class="step"><span class="label">3 &middot; The load-bearing ideas</span>
+      ${(m.ideas || []).map((idea, i) => `<details class="idea" ${i === 0 ? "open" : ""}><summary><h3>${esc(idea.title)}</h3>${tagChip(idea.tag)}</summary><div class="prose">${md(idea.body)}</div></details>`).join("")}
+    </section>
+    ${m.worked_example ? `<section class="step"><span class="label">4 &middot; Worked example</span><div class="panel"><h3>${esc(m.worked_example.title)}</h3><ol class="steps">${(m.worked_example.steps || []).map(s => `<li>${inline(esc(s))}</li>`).join("")}</ol></div></section>` : ""}
+    ${hinge ? `<section class="step"><span class="label">5 &middot; Hinge questions &middot; ${correct}/${answered} right</span>${hinge}${answered ? `<div class="row"><button class="btn small" id="resetHinge">Retake hinge questions</button></div>` : ""}</section>` : ""}
+    ${m.brief_prompt ? `<section class="step"><span class="label">6 &middot; Update your ${esc((C.artifact_name || "brief").toLowerCase())}</span><div class="panel"><div class="prose">${md(m.brief_prompt)}</div>
+      <div class="row"><a class="btn" href="#brief">Open ${esc((C.artifact_name || "design brief").toLowerCase())}</a></div></div></section>` : ""}
+    ${(m.deeper || []).length ? `<section class="step"><span class="label">Go deeper</span><div class="prose"><ul>${m.deeper.map(d => `<li><code>${esc(d)}</code></li>`).join("")}</ul><p class="muted">Full breakdowns live in the course repository under <code>${esc(C.repo_path || "the course folder")}/books/</code>.</p></div></section>` : ""}
+    <div class="row"><button class="btn primary" id="doneBtn">${st.done ? "Marked complete" : "Mark module complete"}</button>${st.done ? `<button class="btn small" id="undoneBtn">Mark incomplete</button>` : ""}</div>
+  </div>`;
+}
+function bindModule(m) {
+  const st = modState(m.id);
+  const ta = $("[data-att]");
+  if (ta) ta.addEventListener("input", () => { st.attempt = ta.value; saveSoon(); });
+  const fb = $("#fb-att");
+  if (fb) fb.addEventListener("click", () => {
+    if (!st.attempt.trim()) { const o = $("#fb-att-out"); o.hidden = false; o.textContent = "Write an attempt first."; return; }
+    const ideas = (m.ideas || []).map(i => "## " + i.title + "\n" + i.body).join("\n\n").slice(0, 12000);
+    mentor($("#fb-att-out"), fb, `${MENTOR_VOICE}
+
+The learner just attempted this problem BEFORE studying the module (productive failure: the attempt is meant to activate prior knowledge and expose gaps, so don't grade harshly on missing knowledge).
+
+Module: ${m.title}
+Problem: ${m.attempt.prompt}
+
+What the module will teach (for your reference; do not dump it on them):
+${ideas}
+
+Learner's attempt:
+${st.attempt}
+
+Reply with: (1) what their attempt gets right, (2) the 2-3 intuitive assumptions it reveals that the module will challenge, phrased as questions to hold while reading, (3) one thing to watch for in the ideas section. Don't give away the full answer.`);
+  });
+  document.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => { st.hinge[+b.dataset.h] = +b.dataset.o; save(); route(); }));
+  const rh = $("#resetHinge"); if (rh) rh.addEventListener("click", () => { st.hinge = {}; save(); route(); });
+  $("#doneBtn").addEventListener("click", () => { st.done = true; save(); route(); });
+  const ud = $("#undoneBtn"); if (ud) ud.addEventListener("click", () => { st.done = false; save(); route(); });
+}
+
+let cardQueue = [], showBack = false;
+function viewCards() {
+  if (!cardQueue.length) cardQueue = dueCards().map(c => c.id);
+  const c = CARDS.find(x => x.id === cardQueue[0]);
+  const learned = Object.values(S.cards).filter(x => x.reps >= 2).length;
+  const head = `<header class="head"><span class="label">Review deck &middot; ${CARDS.length} cards &middot; ${learned} learned</span><h1>Review</h1>
+    <p class="lede">New cards unlock as you complete modules (up to 20 new a day). Answer out loud or in your head before you flip. Grade honestly; the schedule depends on it.</p></header>`;
+  if (!c) return `<div class="sheet">${head}<div class="panel"><h3>Nothing due right now.</h3><p class="muted">Complete a module to unlock its cards, or come back tomorrow.</p></div></div>`;
+  const cs = cardState(c.id);
+  const mod = MODULES.find(m => m.id === c.module);
+  return `<div class="sheet">${head}
+    <div class="row"><span class="label">${cardQueue.length} left in this session</span></div>
+    <div class="card">
+      <div class="row"><span class="label">${esc(c.type || "")} &middot; ${mod ? (mod.id === "m0" ? "Start" : "M" + mod.num) : ""} &middot; ${esc(bookName(c.source || ""))}</span>${cs ? "" : `<span class="tag H">NEW</span>`}</div>
+      <div class="front">${inline(esc(c.front))}</div>
+      ${showBack ? `<div class="back prose reveal">${md(c.back)}</div>` : ""}
+    </div>
+    ${showBack ? `<div class="grades">
+        <button class="btn" data-g="0">Again<small>10 min</small></button>
+        <button class="btn" data-g="1">Hard<small>shorter</small></button>
+        <button class="btn primary" data-g="2">Good<small>on schedule</small></button>
+        <button class="btn" data-g="3">Easy<small>longer</small></button></div>`
+      : `<div class="row"><button class="btn primary" id="flip">Show answer</button><span class="muted">Space bar also flips</span></div>`}
+  </div>`;
+}
+function bindCards() {
+  const f = $("#flip"); if (f) f.addEventListener("click", () => { showBack = true; route(); });
+  document.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => {
+    const id = cardQueue.shift(), g = +b.dataset.g;
+    grade(id, g); if (g === 0) cardQueue.push(id);
+    showBack = false; route();
+  }));
+}
+document.addEventListener("keydown", e => {
+  if (location.hash !== "#cards" || /TEXTAREA|INPUT/.test(document.activeElement.tagName)) return;
+  if (e.code === "Space" && !showBack && cardQueue.length) { e.preventDefault(); showBack = true; route(); }
+  else if (showBack && /^[1-4]$/.test(e.key)) { const b = $(`[data-g="${+e.key - 1}"]`); if (b) b.click(); }
+});
+
+function viewBrief() {
+  const secs = BRIEF.map(s => {
+    const entries = S.brief[s.id] || [];
+    return `<section class="panel" data-sec="${esc(s.id)}">
+      <div class="row" style="justify-content:space-between"><h3>${esc(s.title)}</h3>${tagChip(s.default_tag)}</div>
+      ${s.guidance ? `<div class="prose muted">${md(s.guidance)}</div>` : ""}
+      ${(s.prompts || []).length ? `<details><summary class="label" style="cursor:pointer">Prompts</summary><div class="prose"><ul>${s.prompts.map(p => `<li>${inline(esc(p))}</li>`).join("")}</ul></div></details>` : ""}
+      <div>${entries.map((e, i) => `<div class="entry"><div class="tagpick">${["E", "H", "V"].map(t => `<button class="${t} ${e.tag === t ? "on" : ""}" data-sec="${esc(s.id)}" data-i="${i}" data-t="${t}" aria-label="Tag ${t}">${t}</button>`).join("")}</div>
+        <textarea rows="2" style="min-height:0" data-sec="${esc(s.id)}" data-i="${i}" aria-label="Decision">${esc(e.text)}</textarea>
+        <button class="x" data-del="${esc(s.id)}" data-i="${i}" aria-label="Remove decision">&times;</button></div>`).join("")}</div>
+      <div class="row"><button class="btn small" data-add="${esc(s.id)}">Add decision</button></div>
+    </section>`;
+  }).join("");
+  const n = Object.values(S.brief).reduce((a, x) => a + (x || []).length, 0);
+  return `<div class="sheet"><header class="head"><span class="label">Your evolving ${esc((C.artifact_name || "design brief").toLowerCase())} &middot; ${n} ${esc(C.artifact_items || "decisions")}</span><h1>${esc(C.artifact_name || "Design brief")}</h1>
+    <p class="lede">${esc(C.artifact_lede || "One document that grows with every module.")} Tag each entry: ${tagChip("E")} ${esc(TAGS.E)}, ${tagChip("H")} ${esc(TAGS.H)}, ${tagChip("V")} ${esc(TAGS.V)}. The capstone asks you to defend it.</p>
+    <div class="row"><button class="btn primary" id="critique">Ask the mentor to critique my ${esc((C.artifact_name || "brief").toLowerCase())}</button><button class="btn" id="copyBrief">Copy as text</button></div>
+    <div class="fb prose" id="critique-out" hidden></div></header>${secs}</div>`;
+}
+function briefText() {
+  return BRIEF.map(s => "## " + s.title + "\n" + ((S.brief[s.id] || []).filter(e => e.text.trim()).map(e => `- [${e.tag || "?"}] ${e.text.trim()}`).join("\n") || "- (empty)")).join("\n\n");
+}
+function bindBrief() {
+  document.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", () => {
+    const id = b.dataset.add, sec = BRIEF.find(s => s.id === id);
+    (S.brief[id] = S.brief[id] || []).push({ text: "", tag: (sec && sec.default_tag) || "H" }); save(); route();
+    const tas = document.querySelectorAll(`textarea[data-sec="${id}"]`); if (tas.length) tas[tas.length - 1].focus();
+  }));
+  document.querySelectorAll("textarea[data-sec]").forEach(t => t.addEventListener("input", () => { S.brief[t.dataset.sec][+t.dataset.i].text = t.value; saveSoon(); }));
+  document.querySelectorAll(".tagpick button").forEach(b => b.addEventListener("click", () => { S.brief[b.dataset.sec][+b.dataset.i].tag = b.dataset.t; save(); route(); }));
+  document.querySelectorAll("[data-del]").forEach(b => b.addEventListener("click", () => { S.brief[b.dataset.del].splice(+b.dataset.i, 1); save(); route(); }));
+  $("#critique").addEventListener("click", e => mentor($("#critique-out"), e.currentTarget, `${MENTOR_VOICE}
+
+${C.artifact_critique_prompt || "Critique this document. Check: (1) tagging discipline: anything tagged [E] that is really [H] or [V], or vice versa; (2) contradictions with the evidence the course teaches; (3) internal inconsistencies between sections; (4) the single most important missing decision. Be direct."}
+
+Tensions and decision rules the course teaches:
+${TENSIONS.map(t => "- " + t.name + ": " + t.rule).join("\n").slice(0, 6000)}
+
+The brief:
+${briefText()}`));
+  $("#copyBrief").addEventListener("click", async e => {
+    const btn = e.currentTarget;
+    try { await navigator.clipboard.writeText(briefText()); btn.textContent = "Copied"; }
+    catch (err) { const o = $("#critique-out"); o.hidden = false; o.innerHTML = `<textarea readonly style="min-height:240px">${esc(briefText())}</textarea>`; o.querySelector("textarea").select(); btn.textContent = "Select the text below to copy"; }
+  });
+}
+
+let activeNode = null;
+function viewModel() {
+  const all = {}; MODEL.bands.forEach(b => (b.nodes || []).forEach(n => all[n.id] = n));
+  const act = activeNode && all[activeNode];
+  const linked = new Set(act ? (act.links || []) : []);
+  if (act) Object.values(all).forEach(n => { if ((n.links || []).includes(act.id)) linked.add(n.id); });
+  const bands = MODEL.bands.slice().reverse().map(b => `<div class="band"><header><h3>${esc(b.title)}</h3><span class="label">${(b.nodes || []).length} ideas</span></header>
+    ${b.certainty ? `<p class="muted" style="font-size:.9rem">${inline(esc(b.certainty))}</p>` : ""}
+    <div class="nodes">${(b.nodes || []).map(n => `<button class="node ${activeNode === n.id ? "on" : ""} ${linked.has(n.id) ? "linked" : ""}" data-node="${esc(n.id)}">${esc(n.label)} ${tagChip(n.tag)}</button>`).join("")}</div>
+    ${act && (b.nodes || []).some(n => n.id === act.id) ? `<div class="panel reveal"><div class="row" style="justify-content:space-between"><h3>${esc(act.label)}</h3>${tagChip(act.tag)}</div><div class="prose">${md(act.summary)}</div>
+      ${linked.size ? `<p class="label">Connected: ${[...linked].map(id => all[id] ? esc(all[id].label) : "").filter(Boolean).join(" &middot; ")}</p>` : ""}</div>` : ""}
+  </div>`).join("");
+  return `<div class="sheet wide"><header class="head"><span class="label">${(C.levels || []).map(esc).join(" &rarr; ")}</span><h1>The unified model</h1>
+    <p class="lede">${esc(C.model_lede || "Read it like a building: the first band is the foundation at the bottom, and each band constrains the one above it.")} Select an idea to see what it connects to.</p></header>
+    <div class="bands">${bands}</div>
+    ${MODEL.loop ? `<div class="loop"><span class="label">The improvement loop</span><div class="prose">${md(MODEL.loop)}</div></div>` : ""}
+    ${(MODEL.chain || []).length ? `<section class="step"><span class="label">The causal chain, in plain words</span><div class="prose"><ol>${MODEL.chain.map(c => `<li>${inline(esc(c))}</li>`).join("")}</ol></div></section>` : ""}
+    ${(MODEL.laws || []).length ? `<section class="step"><span class="label">The ${MODEL.laws.length} ${esc(C.laws_noun || "laws")}</span><div class="prose"><ol>${MODEL.laws.map(c => `<li>${inline(esc(c))}</li>`).join("")}</ol></div></section>` : ""}</div>`;
+}
+function bindModel() { document.querySelectorAll("[data-node]").forEach(b => b.addEventListener("click", () => { activeNode = activeNode === b.dataset.node ? null : b.dataset.node; route(); })); }
+
+function viewTensions() {
+  return `<div class="sheet"><header class="head"><span class="label">${TENSIONS.length} live debates</span><h1>Tensions and decision rules</h1>
+    <p class="lede">Experts in this field disagree for real reasons. You won't pick a side for good. You'll know which conditions favor which pole, and what signal should make you switch.</p></header>
+    ${TENSIONS.map(t => `<section class="panel tension"><h3>${esc(t.name)}</h3>
+      <div class="poles"><div><span class="label">Pole A</span><div class="prose">${md(t.pole_a)}</div></div><div><span class="label">Pole B</span><div class="prose">${md(t.pole_b)}</div></div></div>
+      ${t.evidence ? `<div class="prose muted">${md(t.evidence)}</div>` : ""}
+      <p class="rule">${inline(esc(t.rule))}</p>
+      ${t.switch_signal ? `<p><span class="label">Switch signal</span><br>${inline(esc(t.switch_signal))}</p>` : ""}
+      ${(t.sources || []).length ? `<p class="label">${t.sources.map(bookName).map(esc).join(" &middot; ")}</p>` : ""}</section>`).join("")}</div>`;
+}
+
+let openCase = null;
+function viewCases() {
+  if (openCase) {
+    const k = CASES.find(c => c.id === openCase); const st = S.cases[k.id] = S.cases[k.id] || { answer: "", revealed: false };
+    const t = TENSIONS.find(x => x.id === k.tension);
+    return `<div class="sheet"><div class="row"><button class="btn small" id="backCases">All cases</button></div>
+      <header class="head"><span class="label">Case ${CASES.indexOf(k) + 1}${t ? " &middot; " + esc(t.name) : ""}</span><h1>${esc(k.title)}</h1></header>
+      <div class="prose">${md(k.scenario)}</div>
+      <div class="panel attempt"><p class="q"><strong>${inline(esc(k.question || "What do you do?"))}</strong></p>
+        <label class="label" for="case-ans">Your decision and reasoning</label>
+        <textarea id="case-ans" placeholder="Decide, then tag your reasoning [E], [H] or [V].">${esc(st.answer)}</textarea>
+        <div class="row"><button class="btn" id="caseFb">Get mentor feedback</button><button class="btn primary" id="reveal">${st.revealed ? "Hide" : "Reveal"} model answer</button></div>
+        <div class="fb prose" id="case-out" hidden></div></div>
+      ${st.revealed ? `<section class="step reveal"><span class="label">Considerations</span><div class="prose"><ul>${(k.considerations || []).map(c => `<li>${inline(esc(c))}</li>`).join("")}</ul></div>
+        <span class="label">Model answer</span><div class="prose">${md(k.model_answer)}</div>
+        ${(k.sources || []).length ? `<p class="label">${k.sources.map(bookName).map(esc).join(" &middot; ")}</p>` : ""}</section>` : ""}
+    </div>`;
+  }
+  return `<div class="sheet"><header class="head"><span class="label">${CASES.length} ${esc(C.case_noun || "cases")}</span><h1>Casebook</h1>
+    <p class="lede">${esc(C.case_lede || "Realistic situations you will hit.")} Commit to a decision in writing before you look at the model answer.</p></header>
+    <div class="modlist">${CASES.map((k, i) => { const t = TENSIONS.find(x => x.id === k.tension); const st = S.cases[k.id];
+      return `<a class="modrow" href="#cases" data-case="${esc(k.id)}"><span class="num">${i + 1}</span><span><span class="t">${esc(k.title)}</span><br><span class="muted">${t ? esc(t.name) : ""}</span></span><span class="meta">${st && st.answer ? "answered" : ""}</span></a>`; }).join("")}</div></div>`;
+}
+function bindCases() {
+  document.querySelectorAll("[data-case]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); openCase = a.dataset.case; route(); window.scrollTo(0, 0); }));
+  const back = $("#backCases"); if (back) back.addEventListener("click", () => { openCase = null; route(); });
+  if (!openCase) return;
+  const k = CASES.find(c => c.id === openCase), st = S.cases[k.id];
+  $("#case-ans").addEventListener("input", e => { st.answer = e.target.value; saveSoon(); });
+  $("#reveal").addEventListener("click", () => { st.revealed = !st.revealed; save(); route(); });
+  $("#caseFb").addEventListener("click", e => {
+    if (!st.answer.trim()) { const o = $("#case-out"); o.hidden = false; o.textContent = "Write your decision first."; return; }
+    mentor($("#case-out"), e.currentTarget, `${MENTOR_VOICE}
+
+Evaluate the learner's decision on this ${C.case_singular || "case"} against the model answer. Say what they got right, what they missed (especially evidence they ignored or values they left implicit), whether their [E]/[H]/[V] tags are honest, and give one sharper version of their decision in 2-3 sentences. Don't restate the whole model answer.
+
+Case: ${k.title}
+${k.scenario}
+Question: ${k.question}
+Considerations: ${(k.considerations || []).join("; ")}
+Model answer: ${k.model_answer}
+
+Learner's answer:
+${st.answer}`);
+  });
+}
+
+function viewDiagnostic() {
+  const runs = S.diag || [];
+  const cur = S._diagDraft = S._diagDraft || {};
+  const complete = DIAG.every(d => cur[d.id] && cur[d.id].a != null && cur[d.id].c);
+  const last = runs[runs.length - 1], first = runs[0];
+  const score = r => DIAG.filter(d => r.answers[d.id] && r.answers[d.id].a === d.correct).length;
+  const overconf = r => DIAG.filter(d => r.answers[d.id] && r.answers[d.id].a !== d.correct && r.answers[d.id].c >= 4).length;
+  const results = last ? `<section class="panel reveal"><span class="label">Last run &middot; ${new Date(last.at).toLocaleDateString()}</span>
+      <h3>${score(last)} of ${DIAG.length} right &middot; ${overconf(last)} confident mistakes</h3>
+      ${runs.length > 1 ? `<p class="muted">First run: ${score(first)} right, ${overconf(first)} confident mistakes.</p>` : ""}
+      <div class="prose"><ul>${DIAG.map(d => { const a = last.answers[d.id]; const ok = a && a.a === d.correct;
+        return `<li><strong>${ok ? "Right" : "Wrong"}${a ? ", confidence " + a.c : ""}:</strong> ${inline(esc(d.statement))} <em>(${d.correct ? "true" : "false"})</em><br><span class="muted">${inline(esc(d.explanation))}${d.folk_theory && !ok ? " Folk theory: " + inline(esc(d.folk_theory)) : ""}</span></li>`; }).join("")}</ul></div></section>` : "";
+  return `<div class="sheet"><header class="head"><span class="label">Take it on day 1 and again at the end</span><h1>Diagnostic</h1>
+    <p class="lede">True or false, then how sure you are. Confident mistakes matter most: they are intuitive theories, and the course is built to change them.</p></header>
+    ${results}
+    <section class="step"><span class="label">${runs.length ? "Retake" : "Take the diagnostic"}</span>
+    ${DIAG.map((d, i) => { const a = cur[d.id] || {}; return `<div class="dstmt"><p><span class="label">${i + 1}.</span> ${inline(esc(d.statement))}</p>
+      <div class="row"><div class="tf">${[["True", true], ["False", false]].map(([l, v]) => `<button class="${a.a === v ? "on" : ""}" data-d="${esc(d.id)}" data-a="${v}">${l}</button>`).join(" ")}</div>
+      <div class="conf"><span class="label">Sure?</span>${[1, 2, 3, 4, 5].map(c => `<button class="${a.c === c ? "on" : ""}" data-d="${esc(d.id)}" data-c="${c}" aria-label="Confidence ${c}">${c}</button>`).join("")}</div></div></div>`; }).join("")}
+    <div class="row"><button class="btn primary" id="scoreDiag" ${complete ? "" : "disabled"}>Score it</button><span class="muted">${complete ? "" : "Answer every item and rate your confidence."}</span></div></section></div>`;
+}
+function bindDiagnostic() {
+  const cur = S._diagDraft;
+  document.querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", () => { (cur[b.dataset.d] = cur[b.dataset.d] || {}).a = b.dataset.a === "true"; save(); route(); }));
+  document.querySelectorAll("[data-c]").forEach(b => b.addEventListener("click", () => { (cur[b.dataset.d] = cur[b.dataset.d] || {}).c = +b.dataset.c; save(); route(); }));
+  $("#scoreDiag").addEventListener("click", () => { S.diag.push({ at: Date.now(), answers: cur }); S._diagDraft = {}; save(); route(); window.scrollTo(0, 0); });
+}
+
+/* ---------- router ---------- */
+function route() {
+  const h = (location.hash || "#home").slice(1);
+  const main = $("#main"); const y = window.scrollY;
+  const m = MODULES.find(x => x.id === h);
+  if (m) { main.innerHTML = viewModule(m); bindModule(m); }
+  else if (h === "cards") { main.innerHTML = viewCards(); bindCards(); }
+  else if (h === "brief") { main.innerHTML = viewBrief(); bindBrief(); }
+  else if (h === "model") { main.innerHTML = viewModel(); bindModel(); }
+  else if (h === "tensions") { main.innerHTML = viewTensions(); }
+  else if (h === "cases") { main.innerHTML = viewCases(); bindCases(); }
+  else if (h === "diagnostic") { main.innerHTML = viewDiagnostic(); bindDiagnostic(); }
+  else { main.innerHTML = viewHome(); }
+  renderNav(m ? m.id : (h || "home"));
+  if (route.last === h) window.scrollTo(0, y); else window.scrollTo(0, 0);
+  route.last = h;
+  $("#rail").classList.remove("open"); $("#menuBtn").setAttribute("aria-expanded", "false");
+}
+window.addEventListener("hashchange", () => { if (location.hash !== "#cases") openCase = null; cardQueue = []; showBack = false; route(); });
+$("#menuBtn").addEventListener("click", () => { const r = $("#rail"); r.classList.toggle("open"); $("#menuBtn").setAttribute("aria-expanded", String(r.classList.contains("open"))); });
+route();
+connect();
+})();
+</script>
